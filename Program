@@ -1,0 +1,67 @@
+// * Создайте класс Student с полями имя, год рождения, средний балл и названия направления подготовки.
+// * Напишите класс StudentList, который будет содержать помимо массива студентов методы: для добавления
+// * студентов в конец массива, для их упорядочивания по различным полям с использованием ссылок на методы и
+//     * для фильтрации по различным критериям с использованием лямбда-выражений.
+// * В методе main() добавьте несколько студентов, примените упорядочивание и фильтрацию и выведите
+//     * результаты на экран. Упорядочивание должно выполнятся без создания нового объекта StudentList методом
+//     * простой вставки по неубыванию и по невозрастанию по имени(году рождения, в случае совладения имен). при
+//     * фильтрации создаются новые объекты StudentList критерии отбора: направление подготовки, средний балл не 
+// * менее заданного
+public class Student
+{
+    // Поля класса Student
+    public string Name { get; }       // Имя студента 
+    public DateOnly Birth { get; } // Год рождения (используем DateOnly для хранения даты)
+    public double AverageScore { get; } // Средний балл
+    public string Specialization { get; } // Направление подготовки
+
+
+    //конструктор для инициализации информации о студенте
+    public Student(string name, DateOnly birthYear, double avarageScore, string specialization)
+    {
+        Name = name;
+        Birth = birthYear;
+        AverageScore = avarageScore;
+        Specialization = specialization;
+    }
+
+
+    //Сравнение для сортировки по не убыванию
+    //возвращается либо ИСТИНА (если первый студент "меньше" второго), либо ЛОЖЬ (если первый студент "больше" второго)
+    //проверка для 
+    public static bool CompareAsc(Student a, Student b)
+    {
+        int cmp = string.Compare(a.Name, b.Name, StringComparison.CurrentCulture);
+        if (cmp > 0)
+            return true;
+        if (cmp == 0)
+        {
+            int cmpBirth = a.Birth.CompareTo(b.Birth);
+            if (cmpBirth > 0)
+                return true;
+        }
+        return false;
+    }
+
+
+    //Сравнение для сортировки по невозрастанию (аналогичный предыдущему)
+    //возвращается либо ИСТИНА (если первый студент "больше" второго), либо ЛОЖЬ (если первый студент "меньше" второго)
+    public static bool CompareDsc(Student a, Student b)
+    {
+        int cmp = string.Compare(a.Name, b.Name, StringComparison.CurrentCulture);
+        if (cmp < 0)
+            return true;
+        if (cmp == 0)
+        {
+            int cmpBirth = a.Birth.CompareTo(b.Birth);
+            if (cmpBirth < 0)
+                return true;
+        }
+        return false;
+    }
+
+
+// Переопределение метода ToString для удобного вывода информации о студенте
+    public override string ToString()  => $"{Name}, {Birth}, {AverageScore:0.0}, {Specialization}";
+       
+}
