@@ -1,0 +1,143 @@
+//делегат для вызова упорядочивания(сортировки) по определенному методу
+public delegate bool Compare(Student a, Student b); //передается тип возвращаемого объекта; 
+
+
+//обобщенный делегат для вызова фильтрации по определенному методу (отбор) 
+public delegate bool Filter<T>(Student a, T type);  
+
+
+class StudentList
+{
+    private Student[] list;  // Массив студентов
+    private int last = -1;        // Текущее количество студентов (последнее занятое место в массиве)
+    private int capacity = 10;    //Текущая вместимость массива со студентами
+
+
+    //конструктор для объявления массива
+    public StudentList()
+    {
+        list = new Student[capacity]; //создание массива студентов
+    }
+
+
+    public void Add(Student student) //метод для добавления студентов в конец массива
+    {
+            last++;
+            list[last] = student;
+    }
+
+
+    // Обобщенный метод сортировки с использованием делегата
+    // (чтобы было удобно сортировать одновременно и по не возрастанию, и по неубыванию)
+    //пареметры: критерий по которому сортируем, направление сортировки (по невозрастанию/по неубыванию)
+
+
+    public void Sort(Compare compare)  //передаем делегат
+    {
+        
+        for (int i = 0; i <= last; i++)
+        {
+           
+            Student temp = list[i];  //текущий студент
+            int j = i - 1;           //предыдущий студент
+
+            //сдвигаем элементы массива на 1 позицию вправо
+            while (j >= 0 && compare(list[j], temp))
+            {
+                list[j + 1] = list[j];
+                j--;
+            }
+            list[j + 1] = temp;
+        }
+    }
+
+
+    // Метод фильтрации с использованием обобщенного делегата
+    // создает новый массив со студентами и заполняет его исходя из входного признака
+    //передаем название специализации или число (средний балл) и делегат
+    //если делегат возвращает истину - добавляем в новый список студента
+    public StudentList FilterType<T>(T type, Filter<T> f)
+    {
+        StudentList result = new StudentList();
+        for (int i = 0; i <= last; i++)
+        {
+            if (f(list[i], type))
+            {
+                result.Add(list[i]);  
+            }
+        }
+        return result;
+    }
+
+    //вывод массива студентов 
+    public void Print()
+    {
+        for(int i = 0; i <= last; i++)
+        {
+            Console.WriteLine(list[i] + " ");
+        }
+    }
+}
+
+/*
+ * Создайте класс Student с полями имя, год рождения, средний балл и названия направления подготовки.
+ * Напишите класс StudentList, который будет содержать помимо массива студентов методы: для добавления
+ * студентов в конец массива, для их упорядочивания по различным полям с использованием ссылок на методы и
+ * для фильтрации по различным критериям с использованием лямбда-выражений.
+ * В методе main() добавьте несколько студентов, примените упорядочивание и фильтрацию и выведите
+ * результаты на экран. Упорядочивание должно выполнятся без создания нового объекта StudentList методом
+ * простой вставки по неубыванию и по невозрастанию по имени(году рождения, в случае совладения имен). при
+ * фильтрации создаются новые объекты StudentList критерии отбора: направление подготовки, средний балл не 
+ * менее заданного */
+
+
+class Program
+{
+    static void Main()
+    {
+        // Создаем список студентов
+        StudentList students = new StudentList();
+
+        // Добавляем студентов
+        students.Add(new Student("Иванов", new DateOnly(2000, 5, 15), 4.5, "Информатика"));
+        students.Add(new Student("Петров", new DateOnly(1999, 3, 20), 3.8, "Математика"));
+        students.Add(new Student("Сидоров", new DateOnly(2001, 7, 10), 4.2, "Информатика"));
+        students.Add(new Student("Алексеева", new DateOnly(2000, 2, 28), 4.8, "Физика"));
+        students.Add(new Student("Иванов", new DateOnly(1998, 11, 5), 3.9, "Математика"));
+
+        Console.WriteLine("Исходный список студентов:\n");
+        students.Print();
+
+        // Сортировка по неубыванию (по имени, затем по году рождения)
+        Console.WriteLine("\nСортировка по неубыванию:\n");
+
+        students.Sort(Student.CompareAsc);
+        students.Print();
+
+        // Сортировка по невозрастанию (по имени, затем по году рождения)
+        Console.WriteLine("\nСортировка по невозрастанию:\n");
+
+
+        students.Sort(Student.CompareDsc);
+        students.Print();
+
+        // Фильтрация по направлению подготовки (лямбда-выражение)
+        Console.WriteLine("\nСтуденты направления 'Информатика':\n");
+        StudentList informaticsStudents = students.FilterType("Информатика", (student, spec) => student.Specialization == spec);
+        informaticsStudents.Print();
+
+        // Фильтрация по среднему баллу (не менее 4.0) (лямбда-выражение)
+        Console.WriteLine("\nСтуденты со средним баллом не менее 4.0:\n");
+
+        StudentList highScoreStudents = students.FilterType(4.0, (student, minScore) => student.AverageScore >= minScore);
+        highScoreStudents.Print();
+
+        // Комбинированная фильтрация (информатика + балл не менее 4.0)
+        Console.WriteLine("\nСтуденты-информатики со средним баллом не менее 4.0:\n");
+
+
+        StudentList topInformatics = informaticsStudents.FilterType(4.0, (student, minScore) => student.AverageScore >= minScore);
+        topInformatics.Print();
+    
+    }
+}
